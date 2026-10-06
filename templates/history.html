@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Inspection Dashboard</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+
+            margin: 0;
+
+            font-family: Arial, sans-serif;
+
+            background: #eef1f4;
+
+            color: #222;
+        }
+
+
+        .container {
+
+            width: 94%;
+
+            max-width: 1250px;
+
+            margin: 30px auto;
+
+            background: white;
+
+            padding: 30px;
+
+            border-radius: 14px;
+
+            box-shadow: 0 5px 25px rgba(0,0,0,0.10);
+        }
+
+
+        /* ==========================================
+           HEADER
+        ========================================== */
+
+        h1 {
+
+            text-align: center;
+
+            margin-bottom: 8px;
+
+            font-size: 32px;
+        }
+
+
+        .subtitle {
+
+            text-align: center;
+
+            color: #666;
+
+            margin-bottom: 35px;
+
+            font-size: 16px;
+        }
+
+
+        /* ==========================================
+           STATISTICS
+        ========================================== */
+
+        .stats {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 18px;
+
+            margin-bottom: 35px;
+        }
+
+
+        .stat-card {
+
+            padding: 22px;
+
+            background: #f7f8fa;
+
+            border-radius: 10px;
+
+            text-align: center;
+
+            border-left: 5px solid #1677ff;
+        }
+
+
+        .stat-number {
+
+            font-size: 30px;
+
+            font-weight: bold;
+
+            color: #1677ff;
+
+            margin-bottom: 7px;
+        }
+
+
+        .stat-label {
+
+            color: #666;
+
+            font-size: 14px;
+        }
+
+
+        /* ==========================================
+           SECTION
+        ========================================== */
+
+        .section {
+
+            margin-top: 35px;
+
+            margin-bottom: 35px;
+        }
+
+
+        .section h2 {
+
+            margin-bottom: 18px;
+
+            font-size: 22px;
+        }
+
+
+        /* ==========================================
+           DEFECT DISTRIBUTION
+        ========================================== */
+
+        .defect-grid {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
+            gap: 15px;
+        }
+
+
+        .defect-card {
+
+            background: #f7f8fa;
+
+            padding: 18px;
+
+            border-radius: 9px;
+
+            border-left: 5px solid #1677ff;
+        }
+
+
+        .defect-name {
+
+            font-weight: bold;
+
+            font-size: 16px;
+
+            margin-bottom: 8px;
+        }
+
+
+        .defect-count {
+
+            color: #666;
+
+            font-size: 14px;
+        }
+
+
+        .bar-container {
+
+            width: 100%;
+
+            height: 8px;
+
+            background: #ddd;
+
+            border-radius: 10px;
+
+            margin-top: 12px;
+
+            overflow: hidden;
+        }
+
+
+        .bar {
+
+            height: 100%;
+
+            background: #1677ff;
+
+            border-radius: 10px;
+        }
+
+
+        /* ==========================================
+           TABLE
+        ========================================== */
+
+        .table-container {
+
+            overflow-x: auto;
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+
+            min-width: 850px;
+        }
+
+
+        th {
+
+            background: #222;
+
+            color: white;
+
+            padding: 14px;
+
+            text-align: left;
+
+            font-size: 14px;
+        }
+
+
+        td {
+
+            padding: 14px;
+
+            border-bottom: 1px solid #ddd;
+
+            font-size: 14px;
+        }
+
+
+        tr:hover {
+
+            background: #f7f8fa;
+        }
+
+
+        .defect {
+
+            font-weight: bold;
+
+            color: #222;
+        }
+
+
+        .no-defect {
+
+            color: #2e7d32;
+
+            font-weight: bold;
+        }
+
+
+        .confidence {
+
+            font-weight: bold;
+
+            color: #1677ff;
+        }
+
+
+        .regions {
+
+            font-weight: bold;
+        }
+
+
+        /* ==========================================
+           EMPTY HISTORY
+        ========================================== */
+
+        .empty {
+
+            text-align: center;
+
+            padding: 35px;
+
+            color: #666;
+        }
+
+
+        /* ==========================================
+           BUTTON
+        ========================================== */
+
+        .button {
+
+            display: block;
+
+            width: fit-content;
+
+            margin: 30px auto 0;
+
+            padding: 12px 25px;
+
+            background: #222;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 6px;
+
+            transition: 0.2s;
+        }
+
+
+        .button:hover {
+
+            background: #444;
+        }
+
+
+        /* ==========================================
+           FOOTER INFO
+        ========================================== */
+
+        .system-info {
+
+            margin-top: 30px;
+
+            padding: 18px;
+
+            background: #f5f6f7;
+
+            border-radius: 9px;
+
+            color: #666;
+
+            font-size: 14px;
+
+            line-height: 1.7;
+        }
+
+
+        /* ==========================================
+           RESPONSIVE
+        ========================================== */
+
+        @media (max-width: 900px) {
+
+            .stats {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+
+            .defect-grid {
+
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .stats {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .defect-grid {
+
+                grid-template-columns: 1fr;
+            }
+
+
+            .container {
+
+                width: 96%;
+
+                padding: 20px;
+            }
+
+
+            h1 {
+
+                font-size: 25px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- ==========================================
+         HEADER
+    ========================================== -->
+
+    <h1>
+        Industrial Quality Inspection Dashboard
+    </h1>
+
+
+    <div class="subtitle">
+
+        AI-Based Surface Defect Detection & Inspection History
+
+    </div>
+
+
+    <!-- ==========================================
+         CALCULATE STATISTICS
+    ========================================== -->
+
+    {% set total = inspections|length %}
+
+    {% set defective = inspections
+        |selectattr("defect", "ne", "No Defect")
+        |list
+        |length
+    %}
+
+    {% set no_defect = inspections
+        |selectattr("defect", "equalto", "No Defect")
+        |list
+        |length
+    %}
+
+
+    {% set namespace = namespace(
+        confidence_total=0,
+        confidence_count=0
+    ) %}
+
+
+    {% for inspection in inspections %}
+
+        {% if inspection["confidence"] > 0 %}
+
+            {% set namespace.confidence_total =
+                namespace.confidence_total
+                + inspection["confidence"]
+            %}
+
+            {% set namespace.confidence_count =
+                namespace.confidence_count + 1
+            %}
+
+        {% endif %}
+
+    {% endfor %}
+
+
+    {% if namespace.confidence_count > 0 %}
+
+        {% set average_confidence =
+            namespace.confidence_total
+            / namespace.confidence_count
+        %}
+
+    {% else %}
+
+        {% set average_confidence = 0 %}
+
+    {% endif %}
+
+
+    <!-- ==========================================
+         STATISTICS CARDS
+    ========================================== -->
+
+    <div class="stats">
+
+
+        <div class="stat-card">
+
+            <div class="stat-number">
+                {{ total }}
+            </div>
+
+            <div class="stat-label">
+                Total Inspections
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-number">
+                {{ defective }}
+            </div>
+
+            <div class="stat-label">
+                Defective Inspections
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-number">
+                {{ no_defect }}
+            </div>
+
+            <div class="stat-label">
+                No Defect
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-number">
+                {{ "%.1f"|format(average_confidence) }}%
+            </div>
+
+            <div class="stat-label">
+                Average Confidence
+            </div>
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         DEFECT DISTRIBUTION
+    ========================================== -->
+
+    <div class="section">
+
+
+        <h2>
+            Defect Distribution
+        </h2>
+
+
+        {% set defect_types = [
+            "Crazing",
+            "Inclusion",
+            "Patches",
+            "Pitted Surface",
+            "Rolled-in Scale",
+            "Scratches"
+        ] %}
+
+
+        <div class="defect-grid">
+
+
+            {% for defect_type in defect_types %}
+
+
+                {% set count = inspections
+                    |selectattr("defect", "equalto", defect_type)
+                    |list
+                    |length
+                %}
+
+
+                {% if defective > 0 %}
+
+                    {% set percentage =
+                        (count / defective) * 100
+                    %}
+
+                {% else %}
+
+                    {% set percentage = 0 %}
+
+                {% endif %}
+
+
+                <div class="defect-card">
+
+
+                    <div class="defect-name">
+
+                        {{ defect_type }}
+
+                    </div>
+
+
+                    <div class="defect-count">
+
+                        Detected in
+                        <strong>{{ count }}</strong>
+                        inspection(s)
+
+                    </div>
+
+
+                    <div class="bar-container">
+
+                        <div
+                            class="bar"
+                            style="width: {{ percentage }}%;"
+                        >
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+            {% endfor %}
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         INSPECTION HISTORY
+    ========================================== -->
+
+    <div class="section">
+
+
+        <h2>
+            Recent Inspections
+        </h2>
+
+
+        <div class="table-container">
+
+
+            <table>
+
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            ID
+                        </th>
+
+                        <th>
+                            Image
+                        </th>
+
+                        <th>
+                            Defect
+                        </th>
+
+                        <th>
+                            Regions
+                        </th>
+
+                        <th>
+                            Confidence
+                        </th>
+
+                        <th>
+                            Date & Time
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+
+                    {% for inspection in inspections %}
+
+
+                    <tr>
+
+
+                        <td>
+                            {{ inspection["id"] }}
+                        </td>
+
+
+                        <td>
+                            {{ inspection["filename"] }}
+                        </td>
+
+
+                        <td>
+
+                            {% if inspection["defect"] == "No Defect" %}
+
+                                <span class="no-defect">
+                                    No Defect
+                                </span>
+
+                            {% else %}
+
+                                <span class="defect">
+                                    {{ inspection["defect"] }}
+                                </span>
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+
+                            <span class="regions">
+                                {{ inspection["regions"] }}
+                            </span>
+
+                        </td>
+
+
+                        <td>
+
+                            {% if inspection["confidence"] > 0 %}
+
+                                <span class="confidence">
+
+                                    {{ inspection["confidence"] }}%
+
+                                </span>
+
+                            {% else %}
+
+                                —
+
+                            {% endif %}
+
+                        </td>
+
+
+                        <td>
+                            {{ inspection["timestamp"] }}
+                        </td>
+
+
+                    </tr>
+
+
+                    {% else %}
+
+
+                    <tr>
+
+                        <td
+                            colspan="6"
+                            class="empty"
+                        >
+
+                            No inspections recorded yet.
+
+                        </td>
+
+                    </tr>
+
+
+                    {% endfor %}
+
+
+                </tbody>
+
+
+            </table>
+
+
+        </div>
+
+
+    </div>
+
+
+    <!-- ==========================================
+         SYSTEM INFORMATION
+    ========================================== -->
+
+    <div class="system-info">
+
+        <strong>
+            Inspection System:
+        </strong>
+
+        YOLO-based Industrial Defect Detection
+
+        <br>
+
+
+        <strong>
+            Supported Defect Classes:
+        </strong>
+
+        Crazing, Inclusion, Patches,
+        Pitted Surface, Rolled-in Scale,
+        Scratches
+
+        <br>
+
+
+        <strong>
+            Application:
+        </strong>
+
+        AI-assisted surface quality inspection
+        for industrial defect detection.
+
+    </div>
+
+
+    <!-- ==========================================
+         BUTTON
+    ========================================== -->
+
+    <a
+        href="/"
+        class="button"
+    >
+
+        Inspect Another Image
+
+    </a>
+
+
+</div>
+
+
+</body>
+
+</html>

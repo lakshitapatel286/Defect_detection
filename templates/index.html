@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Steel Surface Defect Detection</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6f8;
+            color: #1f2937;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 850px;
+            margin: 65px auto;
+        }
+
+        /* HEADER */
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 30px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .header p {
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        /* MAIN CARD */
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e5e9;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        /* UPLOAD */
+
+        .upload-area {
+            border: 2px dashed #c5cad1;
+            border-radius: 7px;
+            padding: 55px 20px;
+            text-align: center;
+            background: #fafbfc;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-area:hover {
+            border-color: #2563eb;
+            background: #f8fbff;
+        }
+
+        .upload-area h3 {
+            margin: 0 0 10px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .upload-area p {
+            margin: 6px 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* PREVIEW */
+
+        #preview {
+            display: none;
+            margin-top: 25px;
+            text-align: center;
+        }
+
+        #preview img {
+            max-width: 100%;
+            max-height: 350px;
+            border: 1px solid #d9dde3;
+            border-radius: 6px;
+        }
+
+        #filename {
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        /* BUTTON */
+
+        .detect-button {
+            width: 100%;
+            margin-top: 25px;
+            padding: 13px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .detect-button:hover {
+            background: #1d4ed8;
+        }
+
+        .detect-button:disabled {
+            background: #cbd5e1;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+
+        /* HISTORY */
+
+        .history {
+            display: block;
+            width: fit-content;
+            margin: 22px auto 0;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .history:hover {
+            text-decoration: underline;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 600px) {
+
+            .container {
+                width: 94%;
+                margin: 40px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .upload-area {
+                padding: 45px 15px;
+            }
+
+            .header h1 {
+                font-size: 25px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+    <!-- HEADER -->
+
+    <div class="header">
+
+        <h1>
+            Steel Surface Defect Detection
+        </h1>
+
+        <p>
+            Upload a steel surface image for inspection
+        </p>
+
+    </div>
+
+
+    <!-- UPLOAD CARD -->
+
+    <div class="card">
+
+
+        <form
+            action="/predict"
+            method="POST"
+            enctype="multipart/form-data"
+            id="inspectionForm"
+        >
+
+
+            <!-- UPLOAD AREA -->
+
+            <label
+                for="image"
+                class="upload-area"
+            >
+
+                <h3>
+                    Select Steel Surface Image
+                </h3>
+
+                <p>
+                    Click here to choose an image
+                </p>
+
+                <p>
+                    JPG, JPEG or PNG
+                </p>
+
+            </label>
+
+
+            <input
+                type="file"
+                id="image"
+                name="image"
+                accept="image/*"
+                required
+            >
+
+
+            <!-- IMAGE PREVIEW -->
+
+            <div id="preview">
+
+                <img
+                    id="previewImage"
+                    src=""
+                    alt="Selected Image"
+                >
+
+                <div id="filename"></div>
+
+            </div>
+
+
+            <!-- DETECT BUTTON -->
+
+            <button
+                type="submit"
+                class="detect-button"
+                id="detectButton"
+                disabled
+            >
+                Detect Defects
+            </button>
+
+
+        </form>
+
+
+        <!-- HISTORY -->
+
+        <a
+            href="/history"
+            class="history"
+        >
+            Inspection History
+        </a>
+
+
+    </div>
+
+
+</div>
+
+
+<script>
+
+    const imageInput =
+        document.getElementById("image");
+
+    const preview =
+        document.getElementById("preview");
+
+    const previewImage =
+        document.getElementById("previewImage");
+
+    const filename =
+        document.getElementById("filename");
+
+    const detectButton =
+        document.getElementById("detectButton");
+
+
+    imageInput.addEventListener(
+        "change",
+        function () {
+
+            const file = this.files[0];
+
+            if (!file) {
+
+                preview.style.display = "none";
+
+                detectButton.disabled = true;
+
+                return;
+            }
+
+
+            filename.textContent =
+                file.name;
+
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function (event) {
+
+                    previewImage.src =
+                        event.target.result;
+
+                    preview.style.display =
+                        "block";
+
+                };
+
+
+            reader.readAsDataURL(file);
+
+            detectButton.disabled = false;
+
+        }
+    );
+
+
+    document
+        .getElementById("inspectionForm")
+        .addEventListener(
+            "submit",
+            function () {
+
+                detectButton.disabled = true;
+
+                detectButton.textContent =
+                    "Detecting...";
+
+            }
+        );
+
+</script>
+
+
+</body>
+
+</html>
